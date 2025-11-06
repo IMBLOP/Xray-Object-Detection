@@ -44,7 +44,13 @@ X-ray 보안 검색은 현재 공항, 항만 등에서 수동 판독에 크게 �
 
 ### 2.1. 데이터 소스
 * **[AI HUB - 위해물품 엑스레이(X-ray) 이미지 데이터](https://aihub.or.kr/aihubdata/data/view.do?currMenu=115&topMenu=100&searchKeyword=%EC%9C%84%ED%95%B4%EB%AC%BC%ED%92%88%20%EC%97%91%EC%8A%A4%EB%A0%88%EC%9D%B4%20%EC%9D%B4%EB%AF%B8%EC%A7%80&aihubDataSe=data&dataSetSn=233)**
-* 본 데이터셋은 보안 검색 강화 및 X-ray 이미지 자동 판독 기술 개발을 위해 구축되었습니다.
+<img width="1905" height="929" alt="대표도면_1" src="https://github.com/user-attachments/assets/8cd475c7-559e-4c70-8a0f-c2d6ff9d4d8c" />
+
+* 데이터 구조
+<img width="1280" height="720" alt="업로드_데이터셋_폴더구조_엠폴시스템_0" src="https://github.com/user-attachments/assets/bdf48e05-42bc-49e8-846d-ebaaaf23618c" />
+
+
+* **본 데이터셋은 보안 검색 강화 및 X-ray 이미지 자동 판독 기술 개발을 위해 구축되었습니다.**
 
 ### 2.2. 데이터 분석 (EDA)
 * **주요 분석 항목:**
