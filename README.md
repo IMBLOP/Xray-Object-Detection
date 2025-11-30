@@ -12,6 +12,7 @@
 1.  [프로젝트 개요](#1-프로젝트-개요)
 2.  [데이터](#2-데이터)
 3.  [기술 스택 및 모델링](#3-기술-스택-및-모델링)
+
 ---
 
 ## 1. 프로젝트 개요
@@ -20,14 +21,14 @@
 X-ray 보안 검색은 현재 공항, 항만 등에서 수동 판독에 크게 의존하고 있습니다. 이로 인해 발생하는 판독자의 높은 피로도, 일관성 부족, 인적 오류(Human Error) 가능성은 보안 검색의 신뢰도를 저하시키는 주요 원인입니다.
 
 ### 1.2. 프로젝트 목표
-* **정량적 목표:** AI HUB 위해물품 X-ray 데이터를 활용하여, **총 34종의 품목 (위해물품 27종, 저장매체 7종)**을 탐지하고 분류하며, 전체 클래스에 대해 mAP 80% 이상 (또는 프로젝트 목표치)을 달성하는 자동 탐지 모델 개발.
+* **정량적 목표:** AI HUB 위해물품 X-ray 데이터를 활용하여, **총 18종의 핵심 위해물품 및 저장매체**를 탐지하고 분류하며, 전체 클래스에 대해 **mAP 80% 이상**을 달성하는 자동 탐지 모델 개발.
 * **정성적 목표:** 보안 검색 프로세스의 효율성 증대, 인적 오류 감소, 표준화된 판독 기준 제시.
 
 ### 1.3. 프로젝트 범위
 * **In-Scope (포함 범위):**
-    * AI HUB 데이터 전처리 및 분석 (EDA)
+    * AI HUB 데이터 전처리 (로컬 리사이징 및 포맷 변환)
     * 데이터 증강(Augmentation) 파이프라인 구축
-    * 객체 탐지 모델(YOLO, Faster R-CNN 등) 학습 및 하이퍼파라미터 튜닝
+    * 객체 탐지 모델 학습 및 하이퍼파라미터 튜닝
     * 테스트셋을 이용한 정량적 성능 검증
 * **Out-of-Scope (제외 범위):**
     * 실시간 X-ray 하드웨어 장비 연동
@@ -52,16 +53,29 @@ X-ray 보안 검색은 현재 공항, 항만 등에서 수동 판독에 크게 �
 
 * **본 데이터셋은 보안 검색 강화 및 X-ray 이미지 자동 판독 기술 개발을 위해 구축되었습니다.**
 
-### 2.2. 데이터 분석 (EDA)
-* **주요 분석 항목:**
-    * 이미지 해상도 및 크기 분포
-    * 채널 정보 (흑백/컬러)
-    * 위해물품 클래스별 샘플 수 (클래스 불균형 확인)
-    * 바운딩 박스 크기 및 종횡비(Aspect Ratio) 분석
+#### 데이터 선정 전략 (Data Selection)
+본 프로젝트는 데이터의 일관성과 학습 효율성을 위해 **'Smiths Detection'** 장비의 데이터를 메인으로 사용하며, 총 18개의 핵심 클래스를 선별하여 학습을 진행합니다.
 
-### 2.3. 데이터 전처리
-* **이미지 정규화:** 이미지 크기 통일(Resizing) 및 픽셀 값 정규화(Normalization).
-* **데이터 증강 (Augmentation):** 밝기/대비 조절, 회전, 이동 (X-ray 특성 고려).
+* **선별 클래스 (18 Classes):**
+> Aerosol, Alcohol, Battery, SSD, Axe, Bat, Bullet, Electronic cigarettes, Gun, Hammer, Knife, LapTop, Lighter, Liquid, NailClippers, SmartPhone, SupplymentaryBattery, TabletPC
+
+* **데이터 구조 (폴더):**
+* `Single_Default`: 단일 물체, 배경 깨끗함 (기초 학습용)
+* `Single_Other`: 단일 물체, 복잡한 배경 (실전 적응용)
+* `Multiple_Categories`: 다중 물체 혼합 (심화 학습용)
+* `Multiple_Other`: 다중 물체 + 복잡한 배경 (최종 성능 평가용)
+
+### 2.2. 데이터 전처리 (Preprocessing)
+대용량(약 250GB) 데이터를 효율적으로 처리하기 위해 **Two-Step 전처리 파이프라인**을 구축했습니다.
+
+1. **Local Preprocessing (경량화):**
+* 로컬 환경에서 원본 이미지를 `640px` (YOLO 입력 크기)로 리사이징하여 용량을 최적화.
+* 폴더별로 흩어진 XML 어노테이션 파일을 이미지 경로에 맞춰 병합.
+* 데이터 용량 최적화 후 서버 전송 (전송 효율 90% 이상 향상).
+2. **Server Preprocessing (포맷 변환):**
+* **Format Conversion:** Pascal VOC(`xml`) 형식을 YOLO(`txt`) 형식으로 변환.
+* **Normalization:** 바운딩 박스 좌표를 0~1 사이의 상대 좌표로 정규화.
+* **Data Split:** 전체 데이터를 `Train(90%)` / `Validation(10%)`로 계층적 분할(Stratified Split).
 
 ---
 
@@ -75,18 +89,16 @@ X-ray 보안 검색은 현재 공항, 항만 등에서 수동 판독에 크게 �
 | :--- | :--- | :--- | :--- |
 | **Language** | Python | 3.9+ | |
 | **Framework** | PyTorch | 1.12+ | 
-| **Object Detection** | MMDetection | - |  |
+| **Object Detection** | Ultralytics YOLO | v8 | |
 | **Core Libs** | OpenCV | 4.x | 이미지 처리 |
-| **Infra** | Google Colab | T4 | (CUDA 11.x) |
+| **Infra** | **Neuron** | - | High-Performance Server Environment |
 
 ### 3.3. 사용 모델
 
+본 프로젝트는 실시간성과 정확도의 균형을 위해 **1-Stage Detector**인 **YOLOv8**을 베이스라인 모델로 선정하여 학습을 진행합니다.
 
-본 프로젝트는 속도와 정확도의 트레이드오프(Trade-off)를 고려하여 1-Stage와 2-Stage 모델을 모두 실험하고 비교합니다.
-
-* **1-Stage Detector (속도 중심):**
-    * **YOLO (You Only Look Once)**: 특히 **YOLOv8** 모델을 사용하여 빠른 추론 속도와 준수한 정확도를 목표로 합니다. 실시간성이 요구되는 환경에 적합합니다.
-* **2-Stage Detector (정확도 중심):**
-    * **Faster R-CNN**: 복잡하게 겹쳐진(Occluded) 물체나 크기가 매우 작은 물체를 정밀하게 탐지해야 할 경우, 높은 정확도를 보장하기 위해 사용합니다.
+* **모델 선정 이유:**
+* 보안 검색 환경 특성상 빠른 추론 속도(Real-time Inference)가 필수적임.
+* YOLOv8은 이전 버전 대비 작은 물체(Small Object) 탐지 성능이 개선되어, X-ray 내의 작은 위해물품(라이터, 총알 등) 탐지에 유리할 것으로 판단됨.
 
 ---
