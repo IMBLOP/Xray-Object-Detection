@@ -1,25 +1,24 @@
 # 절대 경로를 사용하는 것이 가장 안전합니다.
 # pwd 명령어로 현재 위치 확인 후 수정하세요. 예: /home/ubuntu/my_project/dataset
-path: /scratch/e1430a19/x-ray_project/dataset_resplit
+path: /scratch/e1430a19/x-ray_project/dataset_v2
 train: train/images
 val: valid/images
 test: test/images
 
-nc: 16
+nc: 15
 names:
   0: Aerosol
-  1: Alcohol
+  1: Axe
   2: Bat
   3: Battery
-  4: Bullet
-  5: Electronic cigarettes
-  6: Gun
-  7: Hammer
-  8: HDD
-  9: Knife
-  10: LapTop
-  11: Lighter
-  12: Liquid
-  13: NailClippers
-  14: SmartPhone
-  15: USB
+  4: Gun
+  5: Hammer
+  6: HDD
+  7: Knife
+  8: LapTop
+  9: MetalPipe
+  10: Scissors
+  11: SmartPhone
+  12: Spanner
+  13: TabletPC
+  14: USB

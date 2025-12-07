@@ -6,13 +6,13 @@ from tqdm import tqdm
 
 # ================= 설정 =================
 # 1. 원본 이미지 폴더 경로 (Smith 폴더가 시작점)
-IMAGE_ROOT = r'D:\x-ray_data\Smith'
+IMAGE_ROOT = r'D:\x-ray_data\smith'
 
 # 2. 원본 XML 폴더 경로 (여기 안에 XML들이 쭉 있다고 하셨죠)
-XML_ROOT = r'D:\x-ray_data\Annotation\Train\Smith'
+XML_ROOT = r'D:\x-ray_data\Annotation\train\Smith'
 
 # 3. 결과물이 저장될 새로운 폴더 (이 폴더를 압축해서 서버로 보낼 겁니다)
-OUTPUT_ROOT = r'D:\resized_dataset_upload'
+OUTPUT_ROOT = r'D:\x-ray_data\resized_train_dataset'
 
 # 4. 이미지 크기 및 압축 품질
 IMG_SIZE = 640  # YOLO 학습용 크기

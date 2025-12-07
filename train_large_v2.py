@@ -6,11 +6,11 @@ import os
 def main():
     # --- 1. 설정 (사용자 수정 영역) ---
     # 로컬에서 FTP로 올린 data.yaml의 절대 경로 (지침서 p.8: /scratch 사용 권장) [cite: 237-238]
-    DATA_PATH = os.path.abspath("/scratch/e1430a19/x-ray_project/data.yaml") 
+    DATA_PATH = os.path.abspath("/scratch/e1430a19/x-ray_project/data_v2.yaml") 
     
     PROJECT_NAME = "yolo_project"  # 결과가 저장될 폴더 이름
-    RUN_NAME = "train_v1"          # 실행 이름
-    MODEL_NAME = "yolov8m.pt"      # 사용할 모델 (n, s, m, l, x)
+    RUN_NAME = "train_large_v2"          # 실행 이름
+    MODEL_NAME = "yolov8l.pt"      # 사용할 모델 (n, s, m, l, x)
     
     EPOCHS = 100
     BATCH_SIZE = 16
@@ -44,8 +44,9 @@ def main():
         val=True,             # Epoch마다 Validation 세트로 검증 수행 (기본값)
         copy_paste=0.3,      # 작은 물체를 복사해서 붙여넣기 (학습 기회 증대)
         mixup=0.1,           # 겹침 상황 학습
-        degrees=10.0        # 회전 (다양한 각도 학습)
-
+        degrees=10.0,        # 회전 (다양한 각도 학습)
+        patience=50,         # 50 에폭 동안 성능 향상 없으면 조기 종료 (시간 절약)
+        cos_lr=True          # Cosine Learning Rate Scheduler 사용 (수렴 안정성 향상)
     )
     print("✅ Training Finished.")
 

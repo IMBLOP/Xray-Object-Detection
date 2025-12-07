@@ -6,10 +6,10 @@ import os
 def main():
     # --- 1. 설정 (사용자 수정 영역) ---
     # 로컬에서 FTP로 올린 data.yaml의 절대 경로 (지침서 p.8: /scratch 사용 권장) [cite: 237-238]
-    DATA_PATH = os.path.abspath("/scratch/e1430a19/x-ray_project/data.yaml") 
+    DATA_PATH = os.path.abspath("/scratch/e1430a19/x-ray_project/data_v2.yaml") 
     
     PROJECT_NAME = "yolo_project"  # 결과가 저장될 폴더 이름
-    RUN_NAME = "train_v1"          # 실행 이름
+    RUN_NAME = "train_v2"          # 실행 이름
     MODEL_NAME = "yolov8m.pt"      # 사용할 모델 (n, s, m, l, x)
     
     EPOCHS = 100
