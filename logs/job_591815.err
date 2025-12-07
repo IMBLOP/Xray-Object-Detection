@@ -1,2 +1,0 @@
-/home01/e1430a19/.conda/envs/neuron-yolo/lib/python3.10/site-packages/ultralytics/utils/metrics.py:74: UserWarning: Specified kernel cache directory could not be created! This disables kernel caching. Specified directory is /home01/e1430a19/.cache/torch/kernels. This warning will appear only once per process. (Triggered internally at /pytorch/aten/src/ATen/native/cuda/jit_utils.cpp:1442.)
-  inter = (torch.min(a2, b2) - torch.max(a1, b1)).clamp_(0).prod(2)
