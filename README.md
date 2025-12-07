@@ -197,21 +197,26 @@ X-ray 보안 검색은 현재 공항, 항만 등에서 수동 판독에 크게 �
 | **V1 (Final Selected)** | **99.2%** | **92.8%** | **목표(80%) 초과 달성 및 SOTA급 성능** |
 | **V2 (Experimental)** | 92.0% | 76.8% | 소형 객체 탐지 성능 저하로 기각 |
 
+**[성능 분석 시각화 (Performance Visualization)]**
+
+| Metric | Graph | 분석 (Analysis) |
+| :---: | :---: | :--- |
+| **Class별 정확도** | <img src="v1_model/eval_result/confusion_matrix_normalized.png" width="400" alt="Confusion Matrix"> | **Normalized Confusion Matrix:**<br>대부분의 클래스에서 대각선(정답)이 0.99 이상으로 나타나며, 클래스 간 혼동(오분류)이 거의 없이 명확하게 구분함을 확인할 수 있습니다. |
+| **최적 임계값** | <img src="v1_model/eval_result/BoxF1_curve.png" width="400" alt="F1 Curve"> | **F1-Confidence Curve:**<br>모든 클래스에 대해 Confidence Score가 0.4~0.6 구간일 때 F1 Score가 최고점에 도달하며, 이는 모델이 안정적인 탐지 성능을 유지함을 의미합니다. |
+| **탐지 신뢰성** | <img src="v1_model/eval_result/BoxPR_curve.png" width="400" alt="PR Curve"> | **Precision-Recall Curve:**<br>mAP@50 0.992라는 수치에 걸맞게, 모든 클래스의 곡선이 우상단(1.0, 1.0)에 밀착되어 있어 Precision과 Recall이 모두 우수함을 시각적으로 입증합니다. |
+
+
 **[V1 모델 클래스별 성능]**
 대부분의 클래스에서 99% 이상의 높은 탐지율을 보였으며, 기존에 탐지가 어려웠던 소형 물체에서도 뛰어난 성능을 입증했습니다.
-
 * **Best Performance:** `Aerosol`, `Alcohol`, `Bat`, `Gun`, `Liquid` (**mAP50 0.995**) - 완벽에 가까운 탐지 성능 달성.
 * **Small Objects:** `USB` (**0.994**), `NailClippers` (**0.982**), `Bullet` (**0.975**) - 육안 식별이 어려운 소형 객체도 정밀 탐지 성공.
 * **Challenges:** `Battery` (**mAP50-95 0.909**), `Bullet` (**mAP50-95 0.816**) - 높은 탐지율(mAP50)을 보이나, 정밀한 위치 추정(mAP50-95)에서 개선 여지가 존재함.
 
 ### 5.2. 정성적 평가 (Qualitative Evaluation)
 테스트 데이터셋에 대한 실제 모델 추론(Inference) 결과 시각화입니다.
+![val_batch1_pred](https://github.com/user-attachments/assets/7cbea266-fdbe-475f-bbc0-77857538019f)
+![val_batch2_pred](https://github.com/user-attachments/assets/58fca79f-0c8e-4b8d-8a47-3c6e93df4b41)
 
-| Case | Result Image | 설명 |
-| :---: | :---: | :--- |
-| **다중 객체 탐지** | <img src="[이미지 파일 경로1]" width="400" alt="Multiple Objects"> | 여러 위해물품(칼, 총, 배터리 등)이 섞여 있는 복잡한 가방 환경에서도 개별 객체를 정확히 탐지함. |
-| **소형 객체 탐지** | <img src="[이미지 파일 경로2]" width="400" alt="Small Objects"> | 육안으로 식별이 어려운 **총알(Bullet)** 및 **USB** 등을 정확한 Bounding Box로 포착함. |
-| **겹침/회전 대응** | <img src="[이미지 파일 경로3]" width="400" alt="Occlusion"> | 물체가 겹쳐지거나(Occlusion) 기울어진(Rotation) 상황에서도 `Mixup` 증강 효과로 인해 강건하게 탐지함. |
 
 ---
 
