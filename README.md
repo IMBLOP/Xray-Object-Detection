@@ -197,9 +197,9 @@ X-ray 보안 검색은 현재 공항, 항만 등에서 수동 판독에 크게 �
 | **V1 (Final Selected)** | **99.2%** | **92.8%** | **목표(80%) 초과 달성 및 SOTA급 성능** |
 | **V2 (Experimental)** | 92.0% | 76.8% | 소형 객체 탐지 성능 저하로 기각 |
 
-**[성능 분석 시각화 (Performance Visualization)]**
+**[성능 분석 시각화]**
 
-| Metric | Graph | 분석 (Analysis) |
+| Metric | Graph | 분석 |
 | :---: | :---: | :--- |
 | **Class별 정확도** | <img src="v1_model/eval_result/confusion_matrix_normalized.png" width="400" alt="Confusion Matrix"> | **Normalized Confusion Matrix:**<br>대부분의 클래스에서 대각선(정답)이 0.99 이상으로 나타나며, 클래스 간 혼동(오분류)이 거의 없이 명확하게 구분함을 확인할 수 있습니다. |
 | **최적 임계값** | <img src="v1_model/eval_result/BoxF1_curve.png" width="400" alt="F1 Curve"> | **F1-Confidence Curve:**<br>모든 클래스에 대해 Confidence Score가 0.4~0.6 구간일 때 F1 Score가 최고점에 도달하며, 이는 모델이 안정적인 탐지 성능을 유지함을 의미합니다. |
