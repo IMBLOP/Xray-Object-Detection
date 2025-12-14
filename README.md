@@ -211,9 +211,9 @@ X-ray 보안 검색은 현재 공항, 항만 등에서 수동 판독에 크게 �
 
 | Metric | Graph | 분석 |
 | :---: | :---: | :--- |
-| **Class별 정확도** | <img src="v3_model/eval_result/confusion_matrix_normalized.png" width="400" alt="Confusion Matrix"> | **Normalized Confusion Matrix:**<br>대부분의 클래스에서 대각선(정답)이 **1.00에 근접**하며, V1 대비 클래스 간 오분류가 더욱 감소하여 완벽에 가까운 분류 성능을 보입니다. |
-| **최적 임계값** | <img src="v3_model/eval_result/BoxF1_curve.png" width="400" alt="F1 Curve"> | **F1-Confidence Curve:**<br>Confidence Score 0.5 부근에서 모든 클래스의 F1 Score가 최고점에 도달하며, 이는 모델이 예측에 대해 매우 높은 확신을 가지고 있음을 의미합니다. |
-| **탐지 신뢰성** | <img src="v3_model/eval_result/BoxPR_curve.png" width="400" alt="PR Curve"> | **Precision-Recall Curve:**<br>mAP@50 **99.5%**라는 수치가 보여주듯, PR 곡선이 우상단 모서리에 완벽하게 밀착되어 있어 오탐(False Positive)과 미탐(False Negative)이 거의 없습니다. |
+| **Class별 정확도** | <img src="https://github.com/user-attachments/assets/050b45f1-dfc6-4759-806a-bc90b8930803" width="400" alt="Confusion Matrix"> | **Normalized Confusion Matrix:**<br>대부분의 클래스에서 대각선(정답)이 **1.00에 근접**하며, V1 대비 클래스 간 오분류가 더욱 감소하여 완벽에 가까운 분류 성능을 보입니다. |
+| **최적 임계값** | <img src="https://github.com/user-attachments/assets/65257a46-ffad-4976-9c81-ced07db16eb6" width="400" alt="F1 Curve"> | **F1-Confidence Curve:**<br>Confidence Score 0.5 부근에서 모든 클래스의 F1 Score가 최고점에 도달하며, 이는 모델이 예측에 대해 매우 높은 확신을 가지고 있음을 의미합니다. |
+| **탐지 신뢰성** | <img src="https://github.com/user-attachments/assets/d59b5fde-a310-461a-a127-a84d6c1a950d" width="400" alt="PR Curve"> | **Precision-Recall Curve:**<br>mAP@50 **99.5%**라는 수치가 보여주듯, PR 곡선이 우상단 모서리에 완벽하게 밀착되어 있어 False Positive와 False Negative가 거의 없습니다. |
 
 **[V3 모델 클래스별 성능 상세]**
 YOLOv8 Large 모델 적용 결과, 대형 물체뿐만 아니라 V2에서 문제가 되었던 소형 물체까지 완벽하게 탐지해냈습니다.
@@ -232,9 +232,8 @@ YOLOv8 Large 모델 적용 결과, 대형 물체뿐만 아니라 V2에서 문제
 ### 5.2. 정성적 평가 
 테스트 데이터셋에 대한 실제 모델 추론(Inference) 결과 시각화입니다.
 복잡하게 겹쳐진 수하물 이미지 내에서도 물체의 종류와 위치를 정확히 식별합니다.
-![val_batch1_pred](https://github.com/user-attachments/assets/7cbea266-fdbe-475f-bbc0-77857538019f)
-![val_batch2_pred](https://github.com/user-attachments/assets/58fca79f-0c8e-4b8d-8a47-3c6e93df4b41)
-
+![val_batch0_pred](https://github.com/user-attachments/assets/fc59b179-c277-4f8e-ac44-ab1966163a3d)
+![val_batch1_pred](https://github.com/user-attachments/assets/a801b9af-ddfa-42c3-a423-60b660a535e2)
 
 ---
 
