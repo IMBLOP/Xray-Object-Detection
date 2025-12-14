@@ -153,7 +153,7 @@ X-ray 보안 검색은 현재 공항, 항만 등에서 수동 판독에 크게 �
 | 구분 | V0 (Baseline) | V1 (Distribution Fix) | V2 (Experiment) | **V3 (Final Optimization)** |
 | :--- | :--- | :--- | :--- | :--- |
 | **데이터 구성** | 기존 Split (불균형) | **전체 병합 후 8:1:1** | 8:1:1 (클래스 재구성) | **전체 병합 후 8:1:1** |
-| **모델 규모** | YOLOv8s | YOLOv8s | YOLOv8s | **YOLOv8 Large (확장)** |
+| **모델 규모** | YOLOv8m | YOLOv8m | YOLOv8m | **YOLOv8 Large (확장)** |
 | **좌표 정규화** | XML 헤더 기준 | **XML 헤더 기준** | 실제 이미지 크기 (실패) | **XML 헤더 기준 (롤백)** |
 | **결과 (mAP50)** | Test 35.5% | Test 99.2% | Test 92.0% | **Test 99.5% (SOTA)** |
 
