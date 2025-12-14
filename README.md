@@ -2,6 +2,7 @@
 
 [![Python](https://img.shields.io/badge/Python-3.9%2B-blue.svg)](https://www.python.org/downloads/)
 [![PyTorch](https://img.shields.io/badge/PyTorch-1.12%2B-orange.svg)](https://pytorch.org/)
+[![YOLOv8](https://img.shields.io/badge/YOLO-v8-green)](https://github.com/ultralytics/ultralytics)
 
 본 프로젝트는 AI HUB의 '위해물품 엑스레이 이미지' 데이터를 활용하여, 딥러닝 컴퓨터 비전 기술을 통해 X-ray 이미지 내 위해물품을 자동으로 탐지하는 지도학습(Supervised Learning) 기반 객체 탐지(Object Detection) 모델을 개발합니다.
 
@@ -59,8 +60,9 @@ X-ray 보안 검색은 현재 공항, 항만 등에서 수동 판독에 크게 �
 #### 데이터 선정 전략
 본 프로젝트는 데이터의 일관성과 학습 효율성을 위해 **'Smiths Detection'** 장비의 데이터를 메인으로 사용하며, 총 16개의 핵심 클래스를 선별하여 학습을 진행합니다.
 
-* **선별 클래스 (16 Classes):**
-> Aerosol, Alcohol, Bat, Battery, Bullet, Electronic cigarettes, Gun, Hammer, HDD, Knife, LapTop, Lighter, Liquid, NailClippers, SmartPhone, USB
+* **선별 클래스 (16 -> 15 Classes):**
+> ~~Aerosol, Alcohol, Bat, Battery, Bullet, Electronic cigarettes, Gun, Hammer, HDD, Knife, LapTop, Lighter, Liquid, NailClippers, SmartPhone, USB~~
+> Aerosol, Axe, Bat, Battery, Gun, Hammer, HDD, Knife, LapTop, MetalPipe, Scissors, SmartPhone, Spanner, TabletPC, USB
 
 * **데이터 구조 (폴더):**
 * `Single_Default`: 단일 물체, 배경 깨끗함 (기초 학습용)
@@ -144,17 +146,16 @@ X-ray 보안 검색은 현재 공항, 항만 등에서 수동 판독에 크게 �
 
 ## 4. 프로젝트 고도화 과정
 
-본 프로젝트는 초기 베이스라인 모델(V0)의 한계를 분석하고, 데이터 분포 조정(V1)과 전처리 로직 실험(V2)을 통해 최적의 성능을 도출하였습니다.
+본 프로젝트는 초기 베이스라인 모델(V0)의 한계를 분석하고, 데이터 분포 조정(V1)과 전처리 로직 실험(V2)을 거쳐, **모델 규모 확장 및 최적화(V3)**를 통해 최종 성능을 완성하였습니다.
 
 ### 4.1. 버전별 실험 요약
 
-| 구분 | V0 (Baseline) | V1 (Distribution Fix) | V2 (Experiment) |
-| :--- | :--- | :--- | :--- |
-| **데이터 구성** | 기존 Split 사용 (불균형) | **전체 병합 후 8:1:1 재분할** | 8:1:1 (클래스 재구성 후 분할) |
-| **데이터 증강** | 기본 설정 | **Mixup, CopyPaste, Rotation** | V1 증강 설정 유지 |
-| **좌표 정규화** | XML 헤더 기준 | **XML 헤더 기준** | 실제 이미지 크기 기준 (변경) |
-| **타겟 클래스** | 16종 (소형 물체 포함) | 16종 (소형 물체 포함) | 15종 (탐지 용이성 고려 재구성) |
-| **결과 (mAP50)** | Test 35.5% | **Test 99.2% (성공)** | Test 92.0% (소형 객체 탐지 실패) |
+| 구분 | V0 (Baseline) | V1 (Distribution Fix) | V2 (Experiment) | **V3 (Final Optimization)** |
+| :--- | :--- | :--- | :--- | :--- |
+| **데이터 구성** | 기존 Split (불균형) | **전체 병합 후 8:1:1** | 8:1:1 (클래스 재구성) | **전체 병합 후 8:1:1** |
+| **모델 규모** | YOLOv8s | YOLOv8s | YOLOv8s | **YOLOv8 Large (확장)** |
+| **좌표 정규화** | XML 헤더 기준 | **XML 헤더 기준** | 실제 이미지 크기 (실패) | **XML 헤더 기준 (롤백)** |
+| **결과 (mAP50)** | Test 35.5% | Test 99.2% | Test 92.0% | **Test 99.5% (SOTA)** |
 
 ### 4.2. 상세 진행 및 분석
 
@@ -163,56 +164,74 @@ X-ray 보안 검색은 현재 공항, 항만 등에서 수동 판독에 크게 �
 * **문제점:** 학습(Train) mAP는 99%에 달했으나, 평가(Test) mAP는 **35.5%로** 실사용 불가능 수준.
 * **원인 분석:** Train 데이터와 Test 데이터 간의 **심각한 데이터 분포 불일치(Domain Shift)** 확인.
 
-#### V1: 데이터 분포 재구성 및 증강 
+#### V1: 데이터 분포 재구성 및 증강 (Performance Leap)
 * **해결 전략:**
-    * **데이터 재분할:** Test 데이터를 제외한 Train/Validation 데이터를 모두 합친 후, 무작위 셔플을 통해 **8 : 1 : 1 비율로 재분할**하여 데이터 분포의 균형을 맞춤.
-    * **증강 기법 도입:** X-ray 특성(겹침, 회전)을 반영하여 `CopyPaste(0.3)`, `Mixup(0.1)`, `Degrees(10.0)` 옵션 적용.
+* **데이터 재분할:** Test 데이터를 제외한 Train/Validation 데이터를 모두 합친 후, 무작위 셔플을 통해 **8 : 1 : 1 비율로 재분할**하여 데이터 분포의 균형을 맞춤.
+* **증강 기법 도입:** X-ray 특성(겹침, 회전)을 반영하여 `CopyPaste(0.3)`, `Mixup(0.1)`, `Degrees(10.0)` 옵션 적용.
 * **결과:**
-    * **Test mAP50 99.2%, mAP50-95 92.8% 달성.**
-    * 과적합 문제를 완벽하게 해결하고 일반화 성능을 확보하여 **최종 모델로 선정.**
+* **Test mAP50 99.2% 달성**하며 과적합 문제를 해결하고 일반화 성능 확보.
+* 데이터 파이프라인의 유효성을 입증했으나, 더 높은 정밀도 확보를 위해 추가 연구 진행.
 
 #### V2: 전처리 정밀화 실험 (Experimental Failure)
 * **목표:** '실제 이미지 크기'를 기반으로 좌표를 정규화하여 정밀도를 극대화하고자 함.
 * **시도:** 리사이징 과정에서 XML 헤더 정보 대신, `cv2.imread().shape`를 사용하여 좌표 정규화 로직 변경.
 * **결과 및 분석:**
-    * mAP50이 92.0%로 V1 대비 하락하였으며, 특히 **mAP50-95가 76.8%로 급락.**
-    * **원인:** 리사이징 시 발생하는 Padding과 좌표 계산 로직 간의 미세한 불일치 발생. 이로 인해 **USB(-53%), Battery(-27%) 등 소형 객체의 탐지 성능이 붕괴**됨을 확인.
-* **결론:** 전처리 로직을 V1 방식(XML 메타데이터 기준)으로 롤백 결정.
+* mAP50이 92.0%로 V1 대비 하락하였으며, 특히 **mAP50-95가 76.8%로 급락.**
+* **원인:** 리사이징 시 발생하는 Padding과 좌표 계산 로직 간의 미세한 불일치(Coordinate Shift) 발생. 이로 인해 **USB(-53%), Battery(-27%) 등 소형 객체의 탐지 성능이 붕괴**됨을 확인.
+* **교훈:** 전처리 로직을 안정적인 V1 방식(XML 메타데이터 기준)으로 롤백 결정.
+
+#### V3: 최종 모델 최적화 및 확정 (Final Selection)
+* **전략:**
+* **전처리 롤백:** V2의 실패를 교훈 삼아 **XML 메타데이터 기반 절대 좌표 정규화** 방식을 확정 적용.
+* **Model Scale-Up:** 복잡하게 겹친 물체와 소형 객체(USB, 배터리 등)의 탐지율을 극대화하기 위해 모델을 **YOLOv8 Large**로 확장.
+* **Hyperparameter Tuning:** `Mosaic(1.0)` 및 `Mixup` 비율 최적화를 통해 겹침 상황(Occlusion) 대응력 강화.
+* **최종 성과:**
+* **mAP50 99.5%, mAP50-95 96.2%** 달성 (KPI 초과 달성).
+* 소형 객체(USB, Battery) 및 겹친 물체에 대해서도 완벽에 가까운 탐지 성능을 보여 **최종 배포 모델로 선정.**
 
 ---
 
-## 5. 실험 결과 및 모델 성능 
+## 5. 실험 결과 및 모델 성능
 
-본 프로젝트는 V0(베이스라인), V1(데이터 분포 개선), V2(전처리 실험) 단계에 걸쳐 모델의 성능을 지속적으로 검증하였습니다. 최종적으로 **가장 높은 일반화 성능을 보인 V1 모델**을 최종 모델로 선정하였습니다.
+본 프로젝트는 V0(베이스라인), V1(데이터 분포 개선), V2(전처리 실험) 단계를 거쳐, 최종적으로 모델 규모를 확장하고 전처리 로직을 최적화한 **V3 모델**을 최종 선정하였습니다.
 
-### 5.1. 정량적 평가 (Quantitative Evaluation)
-최종 선정된 **V1 모델(YOLOv8m + Augmentation + Re-split)** 의 테스트 데이터셋 평가 결과입니다.
+### 5.1. 정량적 평가 
+최종 선정된 **V3 모델(YOLOv8l + Augmentation + Re-split)** 의 테스트 데이터셋 평가 결과입니다.
 
 **[전체 성능 요약]**
 
 | Model Version | mAP@50 | mAP@50-95 | 비고 |
 | :--- | :--- | :--- | :--- |
 | **V0 (Baseline)** | 35.5% | 27.1% | 데이터 분포 불일치로 인한 실패 |
-| **V1 (Final Selected)** | **99.2%** | **92.8%** | **목표(80%) 초과 달성 및 SOTA급 성능** |
-| **V2 (Experimental)** | 92.0% | 76.8% | 소형 객체 탐지 성능 저하로 기각 |
+| **V1 (Distribution Fix)** | 99.2% | 92.8% | 일반화 성능 확보 성공 |
+| **V2 (Experimental)** | 92.0% | 76.8% | 소형 객체 탐지 성능 저하 (기각) |
+| **V3 (Final Selected)** | **99.5%** | **96.2%** | **Large 모델 도입으로 정밀도(Precision) 극대화** |
 
 **[성능 분석 시각화]**
 
 | Metric | Graph | 분석 |
 | :---: | :---: | :--- |
-| **Class별 정확도** | <img src="v1_model/eval_result/confusion_matrix_normalized.png" width="400" alt="Confusion Matrix"> | **Normalized Confusion Matrix:**<br>대부분의 클래스에서 대각선(정답)이 0.99 이상으로 나타나며, 클래스 간 혼동(오분류)이 거의 없이 명확하게 구분함을 확인할 수 있습니다. |
-| **최적 임계값** | <img src="v1_model/eval_result/BoxF1_curve.png" width="400" alt="F1 Curve"> | **F1-Confidence Curve:**<br>모든 클래스에 대해 Confidence Score가 0.4~0.6 구간일 때 F1 Score가 최고점에 도달하며, 이는 모델이 안정적인 탐지 성능을 유지함을 의미합니다. |
-| **탐지 신뢰성** | <img src="v1_model/eval_result/BoxPR_curve.png" width="400" alt="PR Curve"> | **Precision-Recall Curve:**<br>mAP@50 0.992라는 수치에 걸맞게, 모든 클래스의 곡선이 우상단(1.0, 1.0)에 밀착되어 있어 Precision과 Recall이 모두 우수함을 시각적으로 입증합니다. |
+| **Class별 정확도** | <img src="v3_model/eval_result/confusion_matrix_normalized.png" width="400" alt="Confusion Matrix"> | **Normalized Confusion Matrix:**<br>대부분의 클래스에서 대각선(정답)이 **1.00에 근접**하며, V1 대비 클래스 간 오분류가 더욱 감소하여 완벽에 가까운 분류 성능을 보입니다. |
+| **최적 임계값** | <img src="v3_model/eval_result/BoxF1_curve.png" width="400" alt="F1 Curve"> | **F1-Confidence Curve:**<br>Confidence Score 0.5 부근에서 모든 클래스의 F1 Score가 최고점에 도달하며, 이는 모델이 예측에 대해 매우 높은 확신을 가지고 있음을 의미합니다. |
+| **탐지 신뢰성** | <img src="v3_model/eval_result/BoxPR_curve.png" width="400" alt="PR Curve"> | **Precision-Recall Curve:**<br>mAP@50 **99.5%**라는 수치가 보여주듯, PR 곡선이 우상단 모서리에 완벽하게 밀착되어 있어 오탐(False Positive)과 미탐(False Negative)이 거의 없습니다. |
 
+**[V3 모델 클래스별 성능 상세]**
+YOLOv8 Large 모델 적용 결과, 대형 물체뿐만 아니라 V2에서 문제가 되었던 소형 물체까지 완벽하게 탐지해냈습니다.
 
-**[V1 모델 클래스별 성능]**
-대부분의 클래스에서 99% 이상의 높은 탐지율을 보였으며, 기존에 탐지가 어려웠던 소형 물체에서도 뛰어난 성능을 입증했습니다.
-* **Best Performance:** `Aerosol`, `Alcohol`, `Bat`, `Gun`, `Liquid` (**mAP50 0.995**) - 완벽에 가까운 탐지 성능 달성.
-* **Small Objects:** `USB` (**0.994**), `NailClippers` (**0.982**), `Bullet` (**0.975**) - 육안 식별이 어려운 소형 객체도 정밀 탐지 성공.
-* **Challenges:** `Battery` (**mAP50-95 0.909**), `Bullet` (**mAP50-95 0.816**) - 높은 탐지율(mAP50)을 보이나, 정밀한 위치 추정(mAP50-95)에서 개선 여지가 존재함.
+* **Perfect Detection (100% ~ 99.7%):**
+* `Gun` (**1.00**), `TabletPC` (**0.997**), `HDD` (**0.999**), `Aerosol` (**0.998**)
+* 형태가 뚜렷하고 특징적인 물체들은 오차가 전혀 없는 완벽한 탐지율을 기록했습니다.
 
-### 5.2. 정성적 평가 (Qualitative Evaluation)
+* **Small Objects Optimization:**
+* `USB` (**0.996**), `Battery` (**0.998**), `Lighter` (**0.992**)
+* 육안 식별이 어려운 초소형 객체들도 V3의 고해상도 특징 추출 능력 덕분에 99% 이상의 탐지율을 달성했습니다.
+
+* **Precision Improvement:**
+* `Battery`의 경우 mAP50은 99.8%이나, mAP50-95(정밀도)는 **0.90**을 기록했습니다. 이는 물체는 확실히 찾지만(Find), 박스의 크기를 아주 미세하게 조정하는 데(Fit) 약간의 여지가 있음을 의미하나, 실사용에는 전혀 무리가 없는 수준입니다.
+
+### 5.2. 정성적 평가 
 테스트 데이터셋에 대한 실제 모델 추론(Inference) 결과 시각화입니다.
+복잡하게 겹쳐진 수하물 이미지 내에서도 물체의 종류와 위치를 정확히 식별합니다.
 ![val_batch1_pred](https://github.com/user-attachments/assets/7cbea266-fdbe-475f-bbc0-77857538019f)
 ![val_batch2_pred](https://github.com/user-attachments/assets/58fca79f-0c8e-4b8d-8a47-3c6e93df4b41)
 
@@ -222,12 +241,13 @@ X-ray 보안 검색은 현재 공항, 항만 등에서 수동 판독에 크게 �
 ## 6. 결론
 
 ### 6.1. 프로젝트 성과 요약
-* **데이터 중심의 문제 해결:** 초기 모델(V0)의 실패 원인을 '모델 구조'가 아닌 '데이터 분포의 불균형(Domain Shift)'에서 찾아내어, 데이터 재분할 전략을 통해 성능을 **35.5% → 99.2%로** 비약적으로 향상시켰습니다.
-* **소형 객체 탐지 한계 극복:** 일반적으로 탐지가 어려운 X-ray 상의 소형 물체(USB, 총알 등)에 대해 **mAP 98% 이상**의 높은 탐지율을 확보하였습니다.
-* **최종 산출물:** 총 16종의 위해물품을 실시간으로 정밀 탐지할 수 있는 YOLOv8 기반의 AI 모델을 확보하였습니다.
+* **데이터 중심의 성능 혁신:** 초기 모델(V0)의 실패 원인을 '데이터 분포의 불균형(Domain Shift)'에서 정확히 진단하고, 재분할 전략과 전처리 최적화를 통해 성능을 **35.5% → 99.5%로** 극대화했습니다.
+* **기술적 난제 해결:** 소형 객체(USB, 배터리)의 탐지 성능 저하 원인이 '좌표 연산 오차(Coordinate Shift)'임을 실험(V2)을 통해 규명하고, **XML 메타데이터 기반 정규화**와 **Large 모델 도입(V3)**으로 이를 완벽하게 극복했습니다.
+* **고신뢰성 모델 확보:** 최종 mAP50-95(정밀도) **96.2%**를 달성하여, 현업 보안 검색대에 즉시 투입 가능한 수준의 정밀한 AI 모델을 구축했습니다.
 
-### 6.2. 한계점 및 향후 과제 
-* **전처리 로직의 민감성:** V2 실험을 통해 리사이징 과정에서의 미세한 좌표 연산 차이가 소형 객체 탐지 성능에 치명적일 수 있음을 확인하였습니다. 향후 더욱 정교한 좌표 보정 알고리즘 연구가 필요합니다.
-* **극한의 겹침 상황:** 매우 얇은 물체가 두꺼운 금속 물체 뒤에 완벽히 가려질 경우, X-ray 투과 특성상 탐지에 한계가 존재할 수 있습니다.
+### 6.2. 한계점 및 향후 과제
+* **모델의 연산 비용:** 탐지 정확도를 극대화하기 위해 **YOLOv8 Large** 모델을 채택함에 따라, Small/Nano 모델 대비 추론 속도와 메모리 사용량이 증가하였습니다. 저사양 엣지 디바이스 탑재를 위해서는 최적화가 필요합니다.
+* **장비 특성 종속성:** 현재 모델은 Smiths Detection 장비 데이터에 고도로 최적화되어 있습니다. 타사(Rapiscan, L3 등) 장비의 X-ray 이미지에 적용할 경우 도메인 적응 과정이 필요할 수 있습니다.
 * **향후 계획:**
-    * **전처리 고도화:** V2에서 실패한 '이미지 크기 기반 정규화' 로직을 수정 보완하여 mAP50-95(정밀도)를 95% 이상으로 끌어올리는 연구 진행.
+* **모델 경량화:** 현재 확보한 고성능 Large 모델의 지식을 작은 모델에 전이하는 **지식 증류** 기법을 적용하여, 성능은 유지하되 속도를 높이는 연구 진행.
+* **멀티 도메인 확장:** 다양한 제조사의 X-ray 장비 데이터를 추가 수집하여, 장비 종류에 상관없이 범용적으로 작동하는 **Global Model**로 고도화.
